@@ -1,49 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #02315E;" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.SignInController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #02315E;" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.rent.service.SignInService">
    <children>
       <Pane layoutY="100.0" prefHeight="600.0" prefWidth="1000.0" style="-fx-background-color: #00457E;">
          <children>
-            <TextField fx:id="loginField" layoutX="301.0" layoutY="150.0" prefHeight="100.0" prefWidth="400.0" promptText="Login" style="-fx-background-color: #2F70AF;">
+            <TextField fx:id="loginField" layoutX="301.0" layoutY="150.0" prefHeight="100.0" prefWidth="400.0" promptText="Login" style="-fx-background-color: #2F70AF; -fx-background-radius: 20;">
                <font>
                   <Font size="30.0" />
                </font>
             </TextField>
-            <PasswordField fx:id="passwordField" layoutX="301.0" layoutY="280.0" prefHeight="100.0" prefWidth="400.0" promptText="Password" style="-fx-background-color: #2F70AF;">
-               <font>
-                  <Font size="30.0" />
-               </font>
-            </PasswordField>
-            <Button fx:id="signInButton" layoutX="420.0" layoutY="459.0" mnemonicParsing="false" prefHeight="75.0" prefWidth="161.0" style="-fx-background-color: #806491;" text="Sign in" textFill="#c6d3fa">
+            <Button fx:id="signInButton" layoutX="420.0" layoutY="459.0" mnemonicParsing="false" prefHeight="75.0" prefWidth="161.0" style="-fx-background-color: #806491; -fx-background-radius: 15;" text="Sign in" textFill="#c6d3fa">
                <font>
                   <Font name="Times New Roman" size="30.0" />
                </font>
             </Button>
-            <Text fill="#c6d3fa" layoutX="399.0" layoutY="85.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Authorization">
+            <Text fill="#c6d3fa" layoutX="387.0" layoutY="86.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Authorization">
                <font>
                   <Font size="34.0" />
                </font>
             </Text>
+            <TextField fx:id="portField" layoutX="300.0" layoutY="273.0" prefHeight="100.0" prefWidth="400.0" promptText="Port" style="-fx-background-color: #2F70AF; -fx-background-radius: 20;">
+               <font>
+                  <Font size="30.0" />
+               </font>
+            </TextField>
          </children>
       </Pane>
-      <Text fill="#c6d3fa" layoutX="364.0" layoutY="72.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Local chat">
+      <Text fill="#c6d3fa" layoutX="334.0" layoutY="70.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Local chat">
          <font>
             <Font name="Times New Roman" size="65.0" />
          </font>
       </Text>
-      <Button fx:id="returnButton" layoutX="28.0" layoutY="27.0" mnemonicParsing="false" opacity="0.65" prefHeight="29.0" prefWidth="88.0" style="-fx-background-color: #806491;" text="Back" textFill="#c6d3fa">
-         <font>
-            <Font size="22.0" />
-         </font>
-      </Button>
       <Pane layoutY="100.0" prefHeight="8.0" prefWidth="1000.0" style="-fx-background-color: #2F70AF;" />
    </children>
 </AnchorPane>

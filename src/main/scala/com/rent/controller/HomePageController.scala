@@ -1,8 +1,8 @@
-package controller
+package com.rent.controller
 
 import javafx.fxml.{FXML, FXMLLoader}
-import javafx.scene.{Parent, Scene}
 import javafx.scene.control.Button
+import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 
 import java.io.IOException
