@@ -39,19 +39,21 @@ object RentApplication {
     def startup(role: String, port: Int): Unit = {
         // Override the configuration of the port and role
         val config = ConfigFactory
-            .parseString(
-                s"""
-          akka.remote.artery.canonical.port=$port
-          akka.cluster.roles = [$role]
-          """)
+            .parseString(s"""
+              akka.remote.artery.canonical.port=$port
+              akka.cluster.roles = [$role]
+              """)
             .withFallback(ConfigFactory.load("transformation"))
 
         ActorSystem[Nothing](RootBehavior(), "ClusterSystem", config)
 
     }
      def main(args: Array[String]): Unit = {
-        startup("backend", 25251)
-        startup("backend", 25252)
+         startup("frontend", 0)
+         startup("frontend", 0)
+         startup("backend", 25251)
+         startup("backend", 25252)
+
         Application.launch(classOf[RentApp])
     }
 
@@ -71,7 +73,6 @@ class RentApp extends Application {
             case e: IOException =>
                 e.printStackTrace()
         }
-
         var gottenController: ChatService = getChatController
     }
 
@@ -86,6 +87,4 @@ class RentApp extends Application {
         }
         loader.getController
     }
-
-
 }

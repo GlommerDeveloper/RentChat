@@ -15,6 +15,7 @@ object Worker {
     def apply(): Behavior[Command] =
         Behaviors.setup { ctx =>
             // each worker registers themselves with the receptionist
+            println("Registering myself with receptionist")
             ctx.log.info("Registering myself with receptionist")
             ctx.system.receptionist ! Receptionist.Register(WorkerServiceKey, ctx.self)
 
