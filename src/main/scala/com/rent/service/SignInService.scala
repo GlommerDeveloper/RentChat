@@ -1,6 +1,6 @@
 package com.rent.service
 
-import com.rent.RentApplication.localPort
+import com.rent.RentApplication.{localPort, startup}
 import com.rent.controller.SignInController
 import javafx.fxml.{FXMLLoader, Initializable}
 import javafx.scene.{Parent, Scene}
@@ -16,20 +16,23 @@ class SignInService extends SignInController with Initializable{
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
         signInButton.setOnAction(event => {
-            localPort = portField.getText
-            signInButton.getScene.getWindow.hide()
-            val loader: FXMLLoader = new FXMLLoader()
-            loader.setLocation(getClass.getResource("/chat.fxml"))
-            try {
-                loader.load()
-            } catch {
-                case exception: IOException =>
-                    exception.printStackTrace()
+            if(loginField.getText.nonEmpty || portField.getText.nonEmpty) {
+                localPort = portField.getText.toInt
+                signInButton.getScene.getWindow.hide()
+                val loader: FXMLLoader = new FXMLLoader()
+                loader.setLocation(getClass.getResource("/chat.fxml"))
+                try {
+                    loader.load()
+                } catch {
+                    case exception: IOException =>
+                        exception.printStackTrace()
+                }
+                val root: Parent = loader.getRoot()
+                val stage: Stage = new Stage()
+                stage.setScene(new Scene(root))
+                stage.show()
+                startup("frontend", localPort)
             }
-            val root: Parent = loader.getRoot()
-            val stage: Stage = new Stage()
-            stage.setScene(new Scene(root))
-            stage.show()
         })
     }
 }

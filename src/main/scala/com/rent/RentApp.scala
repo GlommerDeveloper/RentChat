@@ -3,6 +3,7 @@ package com.rent
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
+import com.rent.RentApplication.startup
 import com.rent.service.ChatService
 import com.typesafe.config.ConfigFactory
 import javafx.application.Application
@@ -42,17 +43,12 @@ object RentApplication {
               akka.remote.artery.canonical.port=$port
               akka.cluster.roles = [$role]
               """)
-            .withFallback(ConfigFactory.load("transformation"))
+            .withFallback(ConfigFactory.load())
 
         ActorSystem[Nothing](RootBehavior(), "ClusterSystem", config)
 
     }
      def main(args: Array[String]): Unit = {
-         //startup("frontend", 25251)
-         startup("frontend", 25252)
-         //startup("backend", 25251)
-         //startup("backend", 25252)
-
         Application.launch(classOf[RentApp])
     }
 
@@ -68,7 +64,7 @@ object RentApplication {
         loader.getController
     }
 
-    var localPort: String = _ // Определяется при вводе в поле "Порт" при авторизации
+    var localPort: Int = _ // Определяется при вводе в поле "Порт" при авторизации
 }
 
 class RentApp extends Application {

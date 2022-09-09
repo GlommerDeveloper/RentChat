@@ -16,14 +16,14 @@ object ClientView {
 
     sealed trait Event
 
-    private final case class WorkersUpdated(newWorkers: Set[ActorRef[ClientView.Event]]) extends Event
+    private final case class ClientsUpdated(newWorkers: Set[ActorRef[ClientView.Event]]) extends Event
 
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
         ctx.system.receptionist ! Receptionist.Register(ClientServiceKey, ctx.self)
 
         val subscriptionAdapter = ctx.messageAdapter[Receptionist.Listing] {
             case ClientView.ClientServiceKey.Listing(workers) =>
-                WorkersUpdated(workers)
+                ClientsUpdated(workers)
         }
 
         ctx.system.receptionist ! Receptionist.Subscribe(ClientView.ClientServiceKey, subscriptionAdapter)
@@ -33,10 +33,9 @@ object ClientView {
 
     private def running(ctx: ActorContext[Event], workers: IndexedSeq[ActorRef[ClientView.Event]]): Behavior[Event] =
         Behaviors.receiveMessage {
-            case WorkersUpdated(newWorkers) =>
+            case ClientsUpdated(newWorkers) =>
                 println("Size: " + newWorkers.size)
                 ctx.log.info("List of services registered with the receptionist changed: {}", newWorkers)
                 running(ctx, newWorkers.toIndexedSeq)
-
         }
 }
