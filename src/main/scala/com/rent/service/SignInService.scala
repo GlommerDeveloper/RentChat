@@ -31,8 +31,9 @@ class SignInService extends SignInController with Initializable{
                 val stage: Stage = new Stage()
                 stage.setScene(new Scene(root))
                 stage.show()
-                startup("frontend", localPort)
+                startup("clientView", localPort)
             }
         })
+
     }
 }

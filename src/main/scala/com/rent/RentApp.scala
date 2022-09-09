@@ -20,16 +20,8 @@ object RentApplication {
         def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] { ctx =>
             val cluster = Cluster(ctx.system)
 
-//            if (cluster.selfMember.hasRole("backend")) {
-//                val workersPerNode =
-//                    ctx.system.settings.config.getInt("transformation.workers-per-node")
-//                (1 to workersPerNode).foreach { n =>
-//                    ctx.spawn(ClientView(), s"Worker$n")
-//                    println("SPAWN WORKER")
-//                }
-//            }
-            if (cluster.selfMember.hasRole("frontend")) {
-                ctx.spawn(ClientView(getChatController), "Frontend")
+            if (cluster.selfMember.hasRole("clientView")) {
+                ctx.spawn(ClientView(getChatController), "ClientView")
                 println("SPAWN FRONTEND")
             }
             Behaviors.empty
