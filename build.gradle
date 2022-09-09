@@ -20,6 +20,10 @@ javafx {
 }
 
 dependencies {
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.0'
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: '2.0.0'
+    testImplementation group: 'org.slf4j', name: 'slf4j-reload4j', version: '2.0.0'
+
     implementation 'org.jetbrains:annotations:23.0.0'
     implementation 'org.scala-lang:scala-library:2.13.8'
     implementation platform("com.typesafe.akka:akka-bom_${versions.ScalaBinary}:2.6.18")
