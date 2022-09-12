@@ -1,10 +1,15 @@
 package com.rent.service
 
-import com.rent.RentApplication.{localPort, startup}
+import akka.actor.ActorRef
+import akka.actor.TypedActor.context
+import com.rent.RentApplication.{clientActor, startup}
 import com.rent.controller.SignInController
+import com.rent.model.Message
 import javafx.fxml.{FXMLLoader, Initializable}
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
+import viewChatController.ClientView
+import viewChatController.ClientView.{NewClient, PostMessage}
 
 import java.io.IOException
 import java.net.URL
@@ -12,12 +17,17 @@ import java.util.ResourceBundle
 
 class SignInService extends SignInController with Initializable{
 
+    var userPort: Int = _
+    var userNickName: String = _
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
         signInButton.setOnAction(event => {
-            if(loginField.getText.nonEmpty || portField.getText.nonEmpty) {
-                localPort = portField.getText.toInt
+            if (nickNameField.getText.nonEmpty || portField.getText.nonEmpty) {
+                userPort = portField.getText.toInt
+                userNickName = nickNameField.getText
+
+
                 signInButton.getScene.getWindow.hide()
                 val loader: FXMLLoader = new FXMLLoader()
                 loader.setLocation(getClass.getResource("/chat.fxml"))
@@ -29,11 +39,13 @@ class SignInService extends SignInController with Initializable{
                 }
                 val root: Parent = loader.getRoot()
                 val stage: Stage = new Stage()
+                startup("clientView", userPort, loader.getController)
                 stage.setScene(new Scene(root))
                 stage.show()
-                startup("clientView", localPort)
+
+                Thread.sleep(5000)
+                clientActor ! NewClient(userPort, userNickName)
             }
         })
-
     }
 }

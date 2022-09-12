@@ -1,9 +1,9 @@
 package com.rent
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
-import com.rent.RentApplication.startup
 import com.rent.service.ChatService
 import com.typesafe.config.ConfigFactory
 import javafx.application.Application
@@ -16,22 +16,29 @@ import java.io.IOException
 
 
 object RentApplication {
+
+    var clientActor: ActorRef[ClientView.Event] = _
+    var chatService: ChatService = _
+
     object RootBehavior {
         def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] { ctx =>
             val cluster = Cluster(ctx.system)
 
             if (cluster.selfMember.hasRole("clientView")) {
-                ctx.spawn(ClientView(getChatController), "ClientView")
+                clientActor = ctx.spawn(ClientView(chatService), "ClientView")
                 println("SPAWN FRONTEND")
             }
             Behaviors.empty
         }
     }
 
-    def startup(role: String, port: Int): Unit = {
-        // Override the configuration of the port and role
+    def startup(role: String, port: Int, receiveChatService: ChatService): Unit = {
+
+        chatService = receiveChatService
+
         val config = ConfigFactory
-            .parseString(s"""
+            .parseString(
+                s"""
               akka.remote.artery.canonical.port=$port
               akka.cluster.roles = [$role]
               """)
@@ -40,7 +47,8 @@ object RentApplication {
         ActorSystem[Nothing](RootBehavior(), "ClusterSystem", config)
 
     }
-     def main(args: Array[String]): Unit = {
+
+    def main(args: Array[String]): Unit = {
         Application.launch(classOf[RentApp])
     }
 
@@ -55,8 +63,6 @@ object RentApplication {
         }
         loader.getController
     }
-
-    var localPort: Int = _ // Определяется при вводе в поле "Порт" при авторизации
 }
 
 class RentApp extends Application {

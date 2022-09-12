@@ -3,29 +3,33 @@ package viewChatController
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
-import com.rent.model.Message
+import com.rent.model.{Client, Message}
 import com.rent.service.ChatService
+import javafx.application.Platform
 
 object ClientView {
 
-    val ClientServiceKey = ServiceKey[ClientView.Event]("Client")
+    val clientServiceKey = ServiceKey[ClientView.Event]("Client")
 
     sealed trait Event
 
-    private final case class ClientsUpdated(newWorkers: Set[ActorRef[ClientView.Event]]) extends Event
+    private final case class ClientsUpdated(newClients: Set[ActorRef[ClientView.Event]]) extends Event
+
+    case class NewClient(clientPort: Int, clientNickName: String) extends Event
 
     case class PostMessage(message: Message) extends Event
 
+
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
 
-        ctx.system.receptionist ! Receptionist.Register(ClientServiceKey, ctx.self)
+        ctx.system.receptionist ! Receptionist.Register(clientServiceKey, ctx.self)
 
         val subscriptionAdapter = ctx.messageAdapter[Receptionist.Listing] {
-            case ClientView.ClientServiceKey.Listing(clients) =>
+            case ClientView.clientServiceKey.Listing(clients) =>
                 ClientsUpdated(clients)
         }
 
-        ctx.system.receptionist ! Receptionist.Subscribe(ClientView.ClientServiceKey, subscriptionAdapter)
+        ctx.system.receptionist ! Receptionist.Subscribe(ClientView.clientServiceKey, subscriptionAdapter)
         running(ctx, IndexedSeq.empty, controller)
     }
 
@@ -36,7 +40,9 @@ object ClientView {
                 ctx.log.info("List of services registered with the receptionist changed: {}", newClients)
                 running(ctx, newClients.toIndexedSeq, controller)
 
-//            case PostMessage() =>
-//                controller.postMessage()
+            case NewClient(clientPort, clientNickName) =>
+                println("IN NEWCLIENT CASE")
+                Platform.runLater(() => controller.newUser(clientPort, clientNickName))
+                Behaviors.same
         }
 }

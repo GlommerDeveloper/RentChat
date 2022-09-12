@@ -12,7 +12,7 @@ class SignInController {
   @FXML
   protected var signInButton: Button = _
   @FXML
-  protected var loginField: TextField = _
+  protected var nickNameField: TextField = _
   @FXML
   protected  var portField: TextField = _
 
