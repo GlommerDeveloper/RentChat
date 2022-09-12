@@ -1,11 +1,9 @@
 package com.rent.model
 
 import akka.actor.typed.receptionist.ServiceKey
-import viewChatController.ClientView
+import com.rent.actor.ClientView
 
-import scala.:+
-
-class Client(constructPort: Int, constructNickName: String, constructKey: ServiceKey[ClientView.Event]) {
+class Client(constructPort: Int, constructNickName: String, constructKey: ServiceKey[ClientView.Event]) extends Serializable{
     private val port: Int = constructPort
     private val nickName: String = constructNickName
     private val key: ServiceKey[ClientView.Event] = constructKey

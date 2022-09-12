@@ -1,23 +1,32 @@
-package viewChatController
+package com.rent.actor
 
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import com.rent.model.{Client, Message}
 import com.rent.service.ChatService
+import com.rent.utils.CborSerializable
 import javafx.application.Platform
+
+import scala.+:
+import scala.collection.mutable
 
 object ClientView {
 
-    val clientServiceKey = ServiceKey[ClientView.Event]("Client")
+    val clientServiceKey: ServiceKey[Event] = ServiceKey[ClientView.Event]("Client")
+    var clientList = mutable.IndexedSeq.empty[Client]
 
     sealed trait Event
 
-    private final case class ClientsUpdated(newClients: Set[ActorRef[ClientView.Event]]) extends Event
+    private final case class ClientsUpdated(newClients: Set[ActorRef[ClientView.Event]]) extends Event with CborSerializable
 
-    case class NewClient(clientPort: Int, clientNickName: String) extends Event
+    case class NewClient(clientPort: Int, clientNickName: String) extends Event with CborSerializable
 
-    case class PostMessage(message: Message) extends Event
+    case class PostMessage(message: Message) extends Event with CborSerializable
+
+    case class SendNewClient(receivedClientList: List[Client]) extends Event with CborSerializable
+
+    case class AskName(answerTo: ActorRef[Event]) extends Event with CborSerializable
 
 
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
@@ -37,12 +46,23 @@ object ClientView {
         Behaviors.receiveMessage {
             case ClientsUpdated(newClients) =>
                 println("Size: " + newClients.size)
-                ctx.log.info("List of services registered with the receptionist changed: {}", newClients)
+                ctx.log.info("///// List of services registered with the receptionist changed: {}", newClients)
                 running(ctx, newClients.toIndexedSeq, controller)
 
             case NewClient(clientPort, clientNickName) =>
-                println("IN NEWCLIENT CASE")
-                Platform.runLater(() => controller.newUser(clientPort, clientNickName))
+                println("------IN NEW_CLIENT CASE------" + "\nport: " + clientPort + "\nnick: " + clientNickName + "\nkey: " + clientServiceKey)
+                val newClient: Client = new Client(clientPort, clientNickName, clientServiceKey)
+                clientList = clientList :+ newClient
+                println(clientList)
+                clients.foreach(actor => actor ! SendNewClient(clientList.toList))
                 Behaviors.same
+
+            case SendNewClient(receivedClientList) =>
+                println("------IN SEND_NEW_CLIENT CASE------")
+                Platform.runLater(() => controller.newUser(receivedClientList))
+                Behaviors.same
+
+            case AskName(answerTo) =>
+                answerTo !
         }
 }

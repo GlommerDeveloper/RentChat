@@ -1,16 +1,15 @@
 package com.rent
 
-import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, Behavior}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
+import com.rent.actor.ClientView
 import com.rent.service.ChatService
 import com.typesafe.config.ConfigFactory
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.stage.Stage
-import viewChatController.ClientView
 
 import java.io.IOException
 

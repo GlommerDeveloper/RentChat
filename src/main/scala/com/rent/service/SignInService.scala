@@ -1,15 +1,12 @@
 package com.rent.service
 
-import akka.actor.ActorRef
-import akka.actor.TypedActor.context
+import akka.actor.typed.receptionist.Receptionist
 import com.rent.RentApplication.{clientActor, startup}
+import com.rent.actor.ClientView.NewClient
 import com.rent.controller.SignInController
-import com.rent.model.Message
 import javafx.fxml.{FXMLLoader, Initializable}
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
-import viewChatController.ClientView
-import viewChatController.ClientView.{NewClient, PostMessage}
 
 import java.io.IOException
 import java.net.URL
@@ -44,6 +41,7 @@ class SignInService extends SignInController with Initializable{
                 stage.show()
 
                 Thread.sleep(5000)
+                Receptionist.Listing
                 clientActor ! NewClient(userPort, userNickName)
             }
         })
