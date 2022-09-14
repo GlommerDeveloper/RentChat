@@ -3,8 +3,9 @@ package com.rent
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
+import com.rent.RentApplication.signInService
 import com.rent.actor.ClientView
-import com.rent.service.ChatService
+import com.rent.service.{ChatService, SignInService}
 import com.typesafe.config.ConfigFactory
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
@@ -18,14 +19,15 @@ object RentApplication {
 
     var clientActor: ActorRef[ClientView.Event] = _
     var chatService: ChatService = _
+    var signInService: SignInService = _
 
     object RootBehavior {
         def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] { ctx =>
             val cluster = Cluster(ctx.system)
 
             if (cluster.selfMember.hasRole("clientView")) {
-                clientActor = ctx.spawn(ClientView(chatService), "ClientView")
-                println("SPAWN FRONTEND")
+                clientActor = ctx.spawn(ClientView(chatService, signInService.getUserNickname, signInService.getUserPort), "ClientView")
+                println("------SPAWN CLIENT_VIEW------")
             }
             Behaviors.empty
         }
@@ -50,18 +52,6 @@ object RentApplication {
     def main(args: Array[String]): Unit = {
         Application.launch(classOf[RentApp])
     }
-
-    def getChatController: ChatService = {
-        val loader: FXMLLoader = new FXMLLoader()
-        loader.setLocation(getClass.getResource("/chat.fxml"))
-        try {
-            loader.load()
-        } catch {
-            case e: IOException =>
-                e.printStackTrace()
-        }
-        loader.getController
-    }
 }
 
 class RentApp extends Application {
@@ -71,6 +61,7 @@ class RentApp extends Application {
         loader.setLocation(getClass.getResource("/signIn.fxml"))
         try {
             val scene: Scene = new Scene(loader.load(), 1000, 700)
+            signInService = loader.getController
             primaryStage.setScene(scene)
             primaryStage.show()
         } catch {

@@ -14,8 +14,8 @@ import java.util.ResourceBundle
 
 class SignInService extends SignInController with Initializable{
 
-    var userPort: Int = _
-    var userNickName: String = _
+    private var userPort: Int = _
+    private var userNickName: String = _
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
@@ -38,10 +38,10 @@ class SignInService extends SignInController with Initializable{
                 startup("clientView", userPort, loader.getController)
                 stage.setScene(new Scene(root))
                 stage.show()
-
-                Thread.sleep(4000)
-                clientActor ! NewClient(userPort, userNickName)
             }
         })
     }
+
+    def getUserPort: Int = userPort
+    def getUserNickname: String = userNickName
 }

@@ -1,15 +1,14 @@
 package com.rent.actor
 
+import akka.actor.TypedActor.self
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.util.Timeout
-import com.rent.model.{Customer, Message}
+import com.rent.model.Customer
 import com.rent.service.ChatService
 import com.rent.utils.CborSerializable
 import javafx.application.Platform
 
-import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
 
@@ -25,22 +24,19 @@ object ClientView {
 
     case class NewClient(clientPort: Int, clientNickName: String) extends Event with CborSerializable
 
-    case class PostMessage(message: Message) extends Event with CborSerializable
-
     case class InfoToNewClient(client: Customer) extends Event with CborSerializable
-
-    case class AskName(answerTo: ActorRef[Event]) extends Event with CborSerializable
 
     case class MyInfo(client: Customer, answerTo: ActorRef[Event]) extends Event with CborSerializable
 
 
-    def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
+    def apply(controller: ChatService, nickname: String, port: Int): Behavior[Event] = Behaviors.setup { ctx =>
 
         ctx.system.receptionist ! Receptionist.Register(clientServiceKey, ctx.self)
 
         val subscriptionAdapter = ctx.messageAdapter[Receptionist.Listing] {
             case ClientView.clientServiceKey.Listing(clients) =>
                 ClientsUpdated(clients)
+                NewClient(port, nickname)
         }
 
         ctx.system.receptionist ! Receptionist.Subscribe(ClientView.clientServiceKey, subscriptionAdapter)
@@ -72,4 +68,5 @@ object ClientView {
                 Platform.runLater(() => controller.newUser(client))
                 Behaviors.same
         }
+
 }
