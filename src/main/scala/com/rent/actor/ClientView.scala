@@ -4,7 +4,7 @@ import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.Timeout
-import com.rent.model.{Client, Message}
+import com.rent.model.{Customer, Message}
 import com.rent.service.ChatService
 import com.rent.utils.CborSerializable
 import javafx.application.Platform
@@ -16,8 +16,8 @@ import scala.language.postfixOps
 object ClientView {
 
     val clientServiceKey: ServiceKey[Event] = ServiceKey[ClientView.Event]("Client")
+    var clientInCluster: Customer = _
 
-    var clientInCluster: Client = _
 
     sealed trait Event
 
@@ -27,11 +27,11 @@ object ClientView {
 
     case class PostMessage(message: Message) extends Event with CborSerializable
 
-    case class SendNewClient(actorRef: ActorRef[Event]) extends Event with CborSerializable
+    case class InfoToNewClient(client: Customer) extends Event with CborSerializable
 
     case class AskName(answerTo: ActorRef[Event]) extends Event with CborSerializable
 
-    case class MyInfo(client: Client) extends Event with CborSerializable
+    case class MyInfo(client: Customer, answerTo: ActorRef[Event]) extends Event with CborSerializable
 
 
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
@@ -56,20 +56,20 @@ object ClientView {
 
             case NewClient(clientPort, clientNickName) =>
                 println("------IN NEW_CLIENT CASE------" + "\nport: " + clientPort + "\nnick: " + clientNickName )
-                clientInCluster = new Client(clientPort, clientNickName, ctx.self)
-                clients.foreach(actor => {
-                    actor ! SendNewClient(ctx.self)
-                    if(actor != ctx.self) actor ! MyInfo(clientInCluster)
-                })
+                clientInCluster = new Customer(clientPort, clientNickName, ctx.self)
+                Platform.runLater(() =>controller.newUser(clientInCluster))
+                clients.foreach(actor => if(actor != ctx.self) actor ! MyInfo(clientInCluster, ctx.self))
                 Behaviors.same
 
-            case SendNewClient(actorRef) =>
-                println("------IN SEND_NEW_CLIENT CASE------")
-                actorRef ! MyInfo(clientInCluster)
-                Behaviors.same
-
-            case MyInfo(receivedClient) =>
+            case MyInfo(receivedClient, answerTo) =>
+                println("------OTHER ACTOR TAKE NEW ACTOR------")
                 Platform.runLater(() => controller.newUser(receivedClient))
+                answerTo ! InfoToNewClient(clientInCluster)
+                Behaviors.same
+
+            case InfoToNewClient(client) =>
+                println("------IN SEND_NEW_CLIENT CASE------")
+                Platform.runLater(() => controller.newUser(client))
                 Behaviors.same
         }
 }

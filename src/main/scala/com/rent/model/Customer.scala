@@ -4,7 +4,7 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.receptionist.ServiceKey
 import com.rent.actor.ClientView
 
-class Client(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event]) extends Serializable{
+class Customer(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event]) extends Serializable{
     private val port: Int = constructPort
     private val nickName: String = constructNickName
     private val refOnActor: ActorRef[ClientView.Event] = constructRef
