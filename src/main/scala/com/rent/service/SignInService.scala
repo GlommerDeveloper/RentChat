@@ -24,7 +24,6 @@ class SignInService extends SignInController with Initializable{
                 userPort = portField.getText.toInt
                 userNickName = nickNameField.getText
 
-
                 signInButton.getScene.getWindow.hide()
                 val loader: FXMLLoader = new FXMLLoader()
                 loader.setLocation(getClass.getResource("/chat.fxml"))
@@ -40,8 +39,7 @@ class SignInService extends SignInController with Initializable{
                 stage.setScene(new Scene(root))
                 stage.show()
 
-                Thread.sleep(5000)
-                Receptionist.Listing
+                Thread.sleep(4000)
                 clientActor ! NewClient(userPort, userNickName)
             }
         })

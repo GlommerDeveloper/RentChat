@@ -1,20 +1,21 @@
 package com.rent.model
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.receptionist.ServiceKey
 import com.rent.actor.ClientView
 
-class Client(constructPort: Int, constructNickName: String, constructKey: ServiceKey[ClientView.Event]) extends Serializable{
+class Client(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event]) extends Serializable{
     private val port: Int = constructPort
     private val nickName: String = constructNickName
-    private val key: ServiceKey[ClientView.Event] = constructKey
+    private val refOnActor: ActorRef[ClientView.Event] = constructRef
 
     def getPort: Int = port
 
     def getNickName: String = nickName
 
-    def getKey: ServiceKey[ClientView.Event] = key
+    def getRef: ActorRef[ClientView.Event] = refOnActor
 
     override def toString: String = {
-        port.toString + " : " + nickName + " : " + key.toString
+        port.toString + " " + nickName + " " + refOnActor.toString
     }
 }

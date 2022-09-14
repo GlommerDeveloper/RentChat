@@ -1,44 +1,37 @@
 package com.rent.service
 
-import com.rent.actor.ClientView.clientServiceKey
+import akka.stream.Client
 import com.rent.controller.ChatController
-import com.rent.model.{Client, Message}
-import javafx.application.Platform
+import com.rent.model.Client
+import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.Initializable
-import javafx.scene.control.ListView
-import javafx.scene.input.KeyCode
+import javafx.scene.control.ListCell
+import javafx.util.Callback
 
 import java.net.URL
 import java.util.ResourceBundle
+import javax.swing.text.html.ListView
 
 class ChatService extends ChatController with Initializable{
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
-        sendButton.setOnAction(event => {
-            sendMessage()
+
+        friendsListView.setCellFactory((list: ListView[Client]) => new ListCell[Client]{
+            override def updateItem(item: Any, empty: Boolean): Unit = {
+                super.updateItem(item, empty)
+
+            }
         })
-        messagesTextField.setOnKeyPressed(event => {
-            if (event.getCode.equals(KeyCode.ENTER)) {
-                sendMessage()
+
+        friendsListView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener[Client] {
+            override def changed(observable: ObservableValue[_ <: Client], oldValue: Client, newValue: Client): Unit = {
+                var currentClient: Client = friendsListView.getSelectionModel.getSelectedItem
+                println(currentClient)
             }
         })
     }
 
-    private def sendMessage(): Unit = {
-        if (messagesTextField.getText.isEmpty) {
-            println("ERROR")
-        } else {
-            chatListView.getItems.add(new Message("", "", messagesTextField.getText))
-            messagesTextField.clear()
-        }
-        //system ! PostMessage(new Message("", "", "Actor"))
-    }
-
-    def postMessage(message: Message): Unit = {
-        chatListView.getItems.add(message)
-    }
-
-    def newUser(listClient: List[Client]): Unit = {
+    def newUser(client: Client): Unit = {
         println("I'M TRYING WRITE NEW USER TO LIST")
-        listClient.foreach(client => friendsListView.getItems.add(client))
+        friendsListView.getItems.add(client)
     }
 }
