@@ -35,13 +35,12 @@ class SignInService extends SignInController with Initializable{
                 }
                 val root: Parent = loader.getRoot()
                 val stage: Stage = new Stage()
-                startup("clientView", userPort, loader.getController)
+                var receivedController: ChatService = loader.getController
+                receivedController.setPortAndNickname(userPort, userNickName)
+                startup("clientView", userPort, receivedController)
                 stage.setScene(new Scene(root))
                 stage.show()
             }
         })
     }
-
-    def getUserPort: Int = userPort
-    def getUserNickname: String = userNickName
 }
