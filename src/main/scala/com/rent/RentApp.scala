@@ -4,7 +4,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
 import com.rent.actor.ClientView
-import com.rent.service.ChatService
+import com.rent.actor.ClientView.{Event, JSer}
 import com.typesafe.config.ConfigFactory
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
@@ -17,23 +17,21 @@ import java.io.IOException
 object RentApplication {
 
     var clientActor: ActorRef[ClientView.Event] = _
-    var chatService: ChatService = _
+
+    trait RootCmd extends JSer
+
+    case class StartChild(answerTo: ActorRef[RootCmd]) extends RootCmd
+
+    case class ChildCreated(actorRef: ActorRef[Event]) extends RootCmd
 
     object RootBehavior {
-        def apply(): Behavior[Nothing] = Behaviors.setup[Nothing] { ctx =>
+        def apply(): Behavior[RootCmd] = Behaviors.setup[RootCmd] { ctx =>
             val cluster = Cluster(ctx.system)
-
-            if (cluster.selfMember.hasRole("clientView")) {
-                clientActor = ctx.spawn(ClientView(chatService), "ClientView")
-                println("------SPAWN CLIENT_VIEW------")
-            }
             Behaviors.empty
         }
     }
 
-    def startup(role: String, port: Int, receiveChatService: ChatService): Unit = {
-
-        chatService = receiveChatService
+    def startup(role: String, port: Int): ActorSystem[RootCmd] = {
 
         val config = ConfigFactory
             .parseString(
@@ -43,8 +41,7 @@ object RentApplication {
               """)
             .withFallback(ConfigFactory.load())
 
-        ActorSystem[Nothing](RootBehavior(), "ClusterSystem", config)
-
+        ActorSystem(RootBehavior(), "ClusterSystem", config)
     }
 
     def main(args: Array[String]): Unit = {

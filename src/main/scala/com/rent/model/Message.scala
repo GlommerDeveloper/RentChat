@@ -1,6 +1,8 @@
 package com.rent.model
 
-class Message(outerFrom: String, outerTo: String, outerTextBody: String) {
+import com.rent.actor.ClientView.JSer
+
+case class Message(outerFrom: String, outerTo: String, outerTextBody: String) extends JSer{
     private var from: String = outerFrom
     private var to: String = outerTo
     private var textBody: String = outerTextBody

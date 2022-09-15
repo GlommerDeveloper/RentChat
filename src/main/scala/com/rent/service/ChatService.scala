@@ -1,13 +1,10 @@
 package com.rent.service
 
-import akka.actor.typed.ActorRef
-import com.rent.actor.ClientView.{Event, NewClient}
 import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.Initializable
 import javafx.scene.control.{ListCell, ListView}
-import javafx.util.Callback
 
 import java.net.URL
 import java.util.ResourceBundle
@@ -18,6 +15,7 @@ class ChatService extends ChatController with Initializable {
     private var currentFriend: Customer = _
     private var myPort: Int = _
     private var myNickname: String = _
+
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
         sendButton.setVisible(false)
@@ -34,13 +32,14 @@ class ChatService extends ChatController with Initializable {
                 }
             }
         })
-
+        chatListView = new ListView()
         friendsListView.getSelectionModel.selectedItemProperty().addListener(new ChangeListener[Customer] {
             override def changed(observable: ObservableValue[_ <: Customer], oldValue: Customer, newValue: Customer): Unit = {
                 currentFriend = friendsListView.getSelectionModel.getSelectedItem
                 sendButton.setVisible(true)
                 messagesTextField.setVisible(true)
-                chatListView = myself.getMapMessagesWithFriends.apply(currentFriend)
+                chatListView.getItems.clear()
+                chatListView.getItems.addAll(myself.getMapMessagesWithFriends(currentFriend.getPort):_*)
             }
         })
 
@@ -62,25 +61,25 @@ class ChatService extends ChatController with Initializable {
         })
     }
 
-    def sayClusterThatImAlive(ref: ActorRef[Event]): Unit ={
-        Thread.sleep(3000)
-        ref ! NewClient(myPort, myNickname)
-    }
-
-    def setPortAndNickname(port: Int, nickname: String): Unit = {
-        myPort = port
-        myNickname = nickname
-    }
-
     def setMySelf(receivedMySelf: Customer): Unit = {
         println("------SET MYSELF------")
         friendsListView.getItems.add(receivedMySelf)
         myself = receivedMySelf
+        myself.setFriendWithChatToMap(myself.getPort)
     }
 
     def newUser(client: Customer): Unit = {
         println("------TRYING TO WRITE NEW USER INTO LIST------")
         friendsListView.getItems.add(client)
-        myself.setMessageToMap(client, new ListView[Message]())
+        myself.setFriendWithChatToMap(client.getPort)
     }
+
+    def setPortAndNickname(receivedPort: Int, receivedNickname: String): Unit ={
+        myPort = receivedPort
+        myNickname = receivedNickname
+    }
+
+    def getMyPort: Int = myPort
+
+    def getMyNickname: String = myNickname
 }
