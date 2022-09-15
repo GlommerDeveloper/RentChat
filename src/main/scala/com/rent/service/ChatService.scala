@@ -1,10 +1,12 @@
 package com.rent.service
 
+import com.rent.actor.ClientView.PostMessage
 import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.Initializable
-import javafx.scene.control.{ListCell, ListView}
+import javafx.scene.control.{ListCell, ListView, SelectionMode}
+import javafx.scene.text.TextAlignment
 
 import java.net.URL
 import java.util.ResourceBundle
@@ -18,9 +20,9 @@ class ChatService extends ChatController with Initializable {
 
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
+
         sendButton.setVisible(false)
         messagesTextField.setVisible(false)
-
 
         friendsListView.setCellFactory((elem: ListView[Customer]) => new ListCell[Customer]() {
             override def updateItem(item: Customer, empty: Boolean): Unit = {
@@ -32,14 +34,14 @@ class ChatService extends ChatController with Initializable {
                 }
             }
         })
-        chatListView = new ListView()
+
         friendsListView.getSelectionModel.selectedItemProperty().addListener(new ChangeListener[Customer] {
             override def changed(observable: ObservableValue[_ <: Customer], oldValue: Customer, newValue: Customer): Unit = {
                 currentFriend = friendsListView.getSelectionModel.getSelectedItem
                 sendButton.setVisible(true)
                 messagesTextField.setVisible(true)
                 chatListView.getItems.clear()
-                chatListView.getItems.addAll(myself.getMapMessagesWithFriends(currentFriend.getPort):_*)
+                chatListView.getItems.addAll(myself.getMapMessagesWithFriends(currentFriend.getRef):_*)
             }
         })
 
@@ -50,13 +52,24 @@ class ChatService extends ChatController with Initializable {
                     setText(null)
                 } else {
                     setText(item.getTextBody)
+                    if(item.getFrom == myself.getRef){
+                        setTextAlignment(TextAlignment.RIGHT)
+                    }else{
+                        setTextAlignment(TextAlignment.LEFT)
+                    }
                 }
             }
         })
 
+        chatListView.getSelectionModel.setSelectionMode(SelectionMode.MULTIPLE)
+
         sendButton.setOnAction(event => {
             if (messagesTextField.getText.nonEmpty) {
-
+                println("--Button is pressed--")
+                val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
+                chatListView.getItems.add(message)
+                messagesTextField.clear()
+                currentFriend.getRef ! PostMessage(message)
             }
         })
     }
@@ -65,13 +78,13 @@ class ChatService extends ChatController with Initializable {
         println("------SET MYSELF------")
         friendsListView.getItems.add(receivedMySelf)
         myself = receivedMySelf
-        myself.setFriendWithChatToMap(myself.getPort)
+        myself.setFriendToMap(myself.getRef)
     }
 
     def newUser(client: Customer): Unit = {
         println("------TRYING TO WRITE NEW USER INTO LIST------")
         friendsListView.getItems.add(client)
-        myself.setFriendWithChatToMap(client.getPort)
+        myself.setFriendToMap(client.getRef)
     }
 
     def setPortAndNickname(receivedPort: Int, receivedNickname: String): Unit ={
@@ -79,7 +92,12 @@ class ChatService extends ChatController with Initializable {
         myNickname = receivedNickname
     }
 
-    def getMyPort: Int = myPort
-
-    def getMyNickname: String = myNickname
+    def setMessageFromOtherActor(message: Message): Unit = {
+        val fromMe: Boolean = if(message.getFrom == myself.getRef) true else false
+        myself.setMessageToListInMap(message, fromMe)
+    }
+//
+//    def getMyPort: Int = myPort
+//
+//    def getMyNickname: String = myNickname
 }

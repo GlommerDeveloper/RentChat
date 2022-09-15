@@ -57,6 +57,7 @@ class RentApp extends Application {
         try {
             val scene: Scene = new Scene(loader.load(), 1000, 700)
             primaryStage.setScene(scene)
+            primaryStage.setResizable(false)
             primaryStage.show()
         } catch {
             case e: IOException =>

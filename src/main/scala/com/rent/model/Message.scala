@@ -1,21 +1,22 @@
 package com.rent.model
 
-import com.rent.actor.ClientView.JSer
+import akka.actor.typed.ActorRef
+import com.rent.actor.ClientView.{Event, JSer}
 
-case class Message(outerFrom: String, outerTo: String, outerTextBody: String) extends JSer{
-    private var from: String = outerFrom
-    private var to: String = outerTo
+class Message(outerFrom: ActorRef[Event], outerTo: ActorRef[Event], outerTextBody: String) extends JSer{
+    private var from: ActorRef[Event] = outerFrom
+    private var to: ActorRef[Event] = outerTo
     private var textBody: String = outerTextBody
 
 
-    def getFrom: String = this.from
-    def setFrom(from: String): Unit = {
+    def getFrom: ActorRef[Event] = this.from
+    def setFrom(from: ActorRef[Event]): Unit = {
         this.from = from
     }
 
-    def getTo: String = this.to
+    def getTo: ActorRef[Event] = this.to
 
-    def setTo(to: String) = {
+    def setTo(to: ActorRef[Event]) = {
         this.to = to
     }
 
@@ -23,9 +24,5 @@ case class Message(outerFrom: String, outerTo: String, outerTextBody: String) ex
 
     def setTextBody(textBody: String): Unit = {
         this.textBody = textBody
-    }
-
-    override def toString: String = {
-        from + to + textBody
     }
 }
