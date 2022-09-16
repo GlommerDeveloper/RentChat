@@ -2,14 +2,16 @@ package com.rent.model
 
 import akka.actor.typed.ActorRef
 import com.rent.actor.ClientView
-import com.rent.actor.ClientView.{Event, JSer}
+import com.rent.actor.ClientView.JSer
+
+import scala.collection.immutable.ArraySeq
 
 
 class Customer(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event])  extends  JSer{
     private val port: Int = constructPort
     private val nickName: String = constructNickName
     private val refOnActor: ActorRef[ClientView.Event] = constructRef
-    private var mapMessagesWithFriends: Map[ActorRef[Event], List[Message]] = Map.empty[ActorRef[Event], List[Message]]
+    private var mapMessagesWithFriends: Map[Int, List[Message]] = Map.empty[Int, List[Message]]
 
     def getPort: Int = port
 
@@ -17,18 +19,18 @@ class Customer(constructPort: Int, constructNickName: String, constructRef: Acto
 
     def getRef: ActorRef[ClientView.Event] = refOnActor
 
-    def getMapMessagesWithFriends: Map[ActorRef[Event], List[Message]] = mapMessagesWithFriends
+    def getMapMessagesWithFriends: Map[Int, List[Message]] = mapMessagesWithFriends
 
-    def setFriendToMap(friendRef: ActorRef[Event]): Unit = {
-        mapMessagesWithFriends = mapMessagesWithFriends + (friendRef ->  List[Message]())
-    }
+    def saveMessagesInChat(message: Message, friend: Customer): Unit = {
 
-    def setMessageToListInMap(message: Message, fromMe: Boolean): Unit = {
-        val list: List[Message] = List[Message](message)
-        if(fromMe){
-            mapMessagesWithFriends = mapMessagesWithFriends + (message.getTo -> list)
-        }else{
-            mapMessagesWithFriends = mapMessagesWithFriends + (message.getFrom -> list)
+        if(message.getTo == friend.getRef){
+            var list: List[Message] = mapMessagesWithFriends.getOrElse(friend.getPort, List.empty[Message])
+            list = list :+ message
+            mapMessagesWithFriends = mapMessagesWithFriends :+ (friend.getPort -> list)
+        } else {
+            var list: List[Message] = mapMessagesWithFriends.getOrElse(port, List.empty)
+            list = list :+ message
+            mapMessagesWithFriends = mapMessagesWithFriends.updated(port, list)
         }
     }
 

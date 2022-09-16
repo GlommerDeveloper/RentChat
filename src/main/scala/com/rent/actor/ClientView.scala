@@ -27,7 +27,7 @@ object ClientView {
 
     case class MyInfo(client: Customer, answerTo: ActorRef[Event]) extends Event
 
-    case class PostMessage(message: Message) extends Event
+    case class PostMessage(message: Message, friend: Customer) extends Event
 
 
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
@@ -75,8 +75,8 @@ object ClientView {
                 Platform.runLater(() => controller.newUser(client))
                 Behaviors.same
 
-            case PostMessage(message) =>
-                Platform.runLater(() => controller.setMessageFromOtherActor(message))
+            case PostMessage(message, friend) =>
+                Platform.runLater(() => controller.setMessageFromOtherActor(message, friend))
                 Behaviors.same
         }
 

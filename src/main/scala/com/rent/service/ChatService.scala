@@ -15,9 +15,6 @@ class ChatService extends ChatController with Initializable {
 
     private var myself: Customer = _
     private var currentFriend: Customer = _
-    private var myPort: Int = _
-    private var myNickname: String = _
-
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
@@ -37,11 +34,16 @@ class ChatService extends ChatController with Initializable {
 
         friendsListView.getSelectionModel.selectedItemProperty().addListener(new ChangeListener[Customer] {
             override def changed(observable: ObservableValue[_ <: Customer], oldValue: Customer, newValue: Customer): Unit = {
-                currentFriend = friendsListView.getSelectionModel.getSelectedItem
-                sendButton.setVisible(true)
-                messagesTextField.setVisible(true)
-                chatListView.getItems.clear()
-                chatListView.getItems.addAll(myself.getMapMessagesWithFriends(currentFriend.getRef):_*)
+                if(currentFriend == myself){
+                    sendButton.setVisible(false)
+                    messagesTextField.setVisible(false)
+                } else {
+                    currentFriend = friendsListView.getSelectionModel.getSelectedItem
+                    sendButton.setVisible(true)
+                    messagesTextField.setVisible(true)
+                    chatListView.getItems.clear()
+                    myself.getMapMessagesWithFriends(currentFriend.getPort).foreach(msg => chatListView.getItems.add(msg))
+                }
             }
         })
 
@@ -61,15 +63,15 @@ class ChatService extends ChatController with Initializable {
             }
         })
 
-        chatListView.getSelectionModel.setSelectionMode(SelectionMode.MULTIPLE)
-
         sendButton.setOnAction(event => {
             if (messagesTextField.getText.nonEmpty) {
                 println("--Button is pressed--")
                 val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
-                chatListView.getItems.add(message)
                 messagesTextField.clear()
-                currentFriend.getRef ! PostMessage(message)
+                myself.saveMessagesInChat(message, currentFriend)
+                chatListView.getItems.clear()
+                chatListView.getItems.addAll(myself.getMapMessagesWithFriends(currentFriend.getPort):_*)
+                currentFriend.getRef ! PostMessage(message, myself)
             }
         })
     }
@@ -78,26 +80,14 @@ class ChatService extends ChatController with Initializable {
         println("------SET MYSELF------")
         friendsListView.getItems.add(receivedMySelf)
         myself = receivedMySelf
-        myself.setFriendToMap(myself.getRef)
     }
 
     def newUser(client: Customer): Unit = {
         println("------TRYING TO WRITE NEW USER INTO LIST------")
         friendsListView.getItems.add(client)
-        myself.setFriendToMap(client.getRef)
     }
 
-    def setPortAndNickname(receivedPort: Int, receivedNickname: String): Unit ={
-        myPort = receivedPort
-        myNickname = receivedNickname
+    def setMessageFromOtherActor(message: Message, friend: Customer): Unit = {
+        myself.saveMessagesInChat(message, friend)
     }
-
-    def setMessageFromOtherActor(message: Message): Unit = {
-        val fromMe: Boolean = if(message.getFrom == myself.getRef) true else false
-        myself.setMessageToListInMap(message, fromMe)
-    }
-//
-//    def getMyPort: Int = myPort
-//
-//    def getMyNickname: String = myNickname
 }
