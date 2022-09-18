@@ -7,6 +7,7 @@ import com.rent.actor.ClientView
 import com.rent.actor.ClientView.NewClient
 import com.rent.controller.SignInController
 import javafx.fxml.{FXMLLoader, Initializable}
+import javafx.scene.image.Image
 import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 
@@ -45,6 +46,8 @@ class SignInService extends SignInController with Initializable {
                 val stage: Stage = new Stage()
                 val receivedController: ChatService = loader.getController
                 stage.setScene(new Scene(root))
+                stage.getIcons.add(new Image("icon.png"))
+                stage.setTitle("Chat")
                 stage.show()
 
                 val clientActor = system.systemActorOf(ClientView.apply(controller = receivedController), "myself")

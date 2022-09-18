@@ -9,6 +9,7 @@ import com.typesafe.config.ConfigFactory
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
+import javafx.scene.image.Image
 import javafx.stage.Stage
 
 import java.io.IOException
@@ -58,6 +59,8 @@ class RentApp extends Application {
             val scene: Scene = new Scene(loader.load(), 1000, 700)
             primaryStage.setScene(scene)
             primaryStage.setResizable(false)
+            primaryStage.getIcons.add(new Image("icon.png"))
+            primaryStage.setTitle("Authorization")
             primaryStage.show()
         } catch {
             case e: IOException =>
