@@ -5,8 +5,9 @@ import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.Initializable
+import javafx.geometry.Pos
 import javafx.scene.control.{ListCell, ListView}
-import javafx.scene.text.TextAlignment
+import javafx.scene.text.{Font, TextAlignment}
 
 import java.net.URL
 import java.util.ResourceBundle
@@ -24,6 +25,8 @@ class ChatService extends ChatController with Initializable {
         friendsListView.setCellFactory((elem: ListView[Customer]) => new ListCell[Customer]() {
             override def updateItem(item: Customer, empty: Boolean): Unit = {
                 super.updateItem(item, empty)
+                setStyle("-fx-control-inner-background: #02315E; -fx-text-fill: #c6d3fa;")
+                setFont(Font.font("Impact",20))
                 if (empty || item == null) {
                     setText(null)
                 } else {
@@ -51,13 +54,17 @@ class ChatService extends ChatController with Initializable {
         chatListView.setCellFactory((elem: ListView[Message]) => new ListCell[Message]() {
             override def updateItem(item: Message, empty: Boolean): Unit = {
                 super.updateItem(item, empty)
+                setStyle("-fx-control-inner-background: #00457E; -fx-text-fill: #c6d3fa;")
+                setFont(Font.font("Impact",16))
                 if (empty || item == null) {
                     setText(null)
                 } else {
                     setText(item.getTextBody)
                     if (item.getFrom == myself.getRef) {
+                        setAlignment(Pos.TOP_RIGHT)
                         setTextAlignment(TextAlignment.RIGHT)
                     } else {
+                        setAlignment(Pos.TOP_LEFT)
                         setTextAlignment(TextAlignment.LEFT)
                     }
                 }
