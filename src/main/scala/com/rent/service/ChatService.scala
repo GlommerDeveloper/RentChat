@@ -1,6 +1,6 @@
 package com.rent.service
 
-import com.rent.actor.ClientView.PostMessage
+import com.rent.actor.ClientView.{PostMessage, PostMessageToGeneral, clientInCluster}
 import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
@@ -16,6 +16,7 @@ class ChatService extends ChatController with Initializable {
 
     private var myself: Customer = _
     private var currentFriend: Customer = _
+    private var generalRoom: Customer = new Customer(200002, "General", null)
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
@@ -79,16 +80,21 @@ class ChatService extends ChatController with Initializable {
                 myself.saveMessagesInChat(message, currentFriend)
                 chatListView.getItems.clear()
                 myself.getListMessagesWithFriends(currentFriend).foreach(msg => chatListView.getItems.add(msg))
-                currentFriend.getRef ! PostMessage(message, myself)
+                if (currentFriend.getPort == 200002){
+                    println("---SEND MESSAGE TO ACTOR---")
+                    myself.getRef ! PostMessageToGeneral(message, myself, generalRoom)
+                } else {
+                    currentFriend.getRef ! PostMessage(message, myself)
+                }
             }
         })
     }
 
     def setMySelf(receivedMySelf: Customer): Unit = {
         println("------SET MYSELF------")
+        friendsListView.getItems.add(generalRoom)
         friendsListView.getItems.add(receivedMySelf)
         myself = receivedMySelf
-        myself.setNewFriendToMap(myself)
     }
 
     def newUser(client: Customer): Unit = {

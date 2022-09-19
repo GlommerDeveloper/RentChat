@@ -39,9 +39,9 @@ class Customer(constructPort: Int, constructNickName: String, constructRef: Acto
         }
     }
 
-    override def toString: String = {
-        port.toString + " " + nickName + " " + refOnActor.toString
-    }
+//    override def toString: String = {
+//        port.toString + " " + nickName + " " + refOnActor.toString
+//    }
 
     def canEqual(a: Any) = a.isInstanceOf[Customer]
 
