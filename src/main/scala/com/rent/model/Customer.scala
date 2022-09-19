@@ -4,10 +4,8 @@ import akka.actor.typed.ActorRef
 import com.rent.actor.ClientView
 import com.rent.actor.ClientView.JSer
 
-import scala.collection.immutable.ArraySeq
 
-
-class Customer(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event])  extends  JSer{
+class Customer(constructPort: Int, constructNickName: String, constructRef: ActorRef[ClientView.Event]) extends JSer {
     private val port: Int = constructPort
     private val nickName: String = constructNickName
     private val refOnActor: ActorRef[ClientView.Event] = constructRef
@@ -19,22 +17,45 @@ class Customer(constructPort: Int, constructNickName: String, constructRef: Acto
 
     def getRef: ActorRef[ClientView.Event] = refOnActor
 
-    def getMapMessagesWithFriends: Map[Int, List[Message]] = mapMessagesWithFriends
-
-    def saveMessagesInChat(message: Message, friend: Customer): Unit = {
-
-        if(message.getTo == friend.getRef){
-            var list: List[Message] = mapMessagesWithFriends.getOrElse(friend.getPort, List.empty[Message])
-            list = list :+ message
-            mapMessagesWithFriends = mapMessagesWithFriends :+ (friend.getPort -> list)
+    def getListMessagesWithFriends(currentFriend: Customer): List[Message] = {
+        if (mapMessagesWithFriends.contains(currentFriend.getPort)) {
+            mapMessagesWithFriends.apply(currentFriend.getPort)
         } else {
-            var list: List[Message] = mapMessagesWithFriends.getOrElse(port, List.empty)
-            list = list :+ message
-            mapMessagesWithFriends = mapMessagesWithFriends.updated(port, list)
+            List.empty[Message]
         }
     }
 
-    override def toString: String = {
-        port.toString + " " + nickName + " " + refOnActor.toString
+    def setNewFriendToMap(friend: Customer): Unit = {
+        mapMessagesWithFriends += (friend.getPort -> List())
+    }
+
+    def saveMessagesInChat(message: Message, friend: Customer): Unit = {
+
+        if (mapMessagesWithFriends.contains(friend.getPort)) {
+            val list: List[Message] = mapMessagesWithFriends.apply(friend.getPort)
+            mapMessagesWithFriends = mapMessagesWithFriends.updated(friend.getPort, list :+ message)
+        } else {
+            mapMessagesWithFriends += (friend.getPort -> List(message))
+        }
+    }
+
+//    override def toString: String = {
+//        port.toString + " " + nickName + " " + refOnActor.toString
+//    }
+
+    def canEqual(a: Any) = a.isInstanceOf[Customer]
+
+    override def equals(that: Any): Boolean =
+        that match {
+            case that: Customer => that.canEqual(this) && this.hashCode == that.hashCode
+            case _ => false
+        }
+
+    override def hashCode: Int = {
+        val prime = 31
+        var result = 1
+        result = prime * result + port;
+        result = prime * result + (if (nickName == null) 0 else nickName.hashCode)
+        result
     }
 }
