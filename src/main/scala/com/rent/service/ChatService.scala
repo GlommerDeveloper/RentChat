@@ -16,7 +16,7 @@ class ChatService extends ChatController with Initializable {
 
     private var myself: Customer = _
     private var currentFriend: Customer = _
-    private var generalRoom: Customer = new Customer(200002, "General", null)
+    private val generalRoom: Customer = new Customer(200002, "General", null)
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
@@ -63,13 +63,19 @@ class ChatService extends ChatController with Initializable {
                     setText(item.getTextBody)
                     if (item.getFrom == myself.getRef) {
                         setAlignment(Pos.TOP_RIGHT)
-                        setTextAlignment(TextAlignment.RIGHT)
                     } else {
                         setAlignment(Pos.TOP_LEFT)
-                        setTextAlignment(TextAlignment.LEFT)
                     }
                 }
             }
+        })
+
+        sendButton.setOnMouseEntered(event => {
+            sendButton.setStyle("-fx-background-color: #643a7e")
+        })
+
+        sendButton.setOnMouseExited(event => {
+            sendButton.setStyle("-fx-background-color: #806491")
         })
 
         sendButton.setOnAction(event => {
@@ -99,7 +105,11 @@ class ChatService extends ChatController with Initializable {
 
     def newUser(client: Customer): Unit = {
         println("------TRYING TO WRITE NEW USER INTO LIST------")
-        friendsListView.getItems.add(client)
+        var check: Boolean = true
+        friendsListView.getItems.forEach(friend => if(friend.equals(client)) check = false)
+        if (check) {
+            friendsListView.getItems.add(client)
+        }
     }
 
     def setMessageFromOtherActor(message: Message, friend: Customer): Unit = {

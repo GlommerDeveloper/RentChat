@@ -21,10 +21,6 @@ object RentApplication {
 
     trait RootCmd extends JSer
 
-    case class StartChild(answerTo: ActorRef[RootCmd]) extends RootCmd
-
-    case class ChildCreated(actorRef: ActorRef[Event]) extends RootCmd
-
     object RootBehavior {
         def apply(): Behavior[RootCmd] = Behaviors.setup[RootCmd] { ctx =>
             val cluster = Cluster(ctx.system)

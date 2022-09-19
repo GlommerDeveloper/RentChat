@@ -24,13 +24,21 @@ class SignInService extends SignInController with Initializable {
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
+        signInButton.setOnMouseEntered(event => {
+            signInButton.setStyle("-fx-background-color: #643a7e")
+        })
+
+        signInButton.setOnMouseExited(event => {
+            signInButton.setStyle("-fx-background-color: #806491")
+        })
+
         signInButton.setOnAction(event => {
             if (nickNameField.getText.nonEmpty || portField.getText.nonEmpty) {
                 userPort = portField.getText.toInt
                 userNickName = nickNameField.getText
                 signInButton.getScene.getWindow.hide()
 
-                val system = startup("clientView", userPort)
+                val system = startup("clientView", userPort)        //RUN CLUSTER
                 implicit val timeout: Timeout = Timeout(20.seconds)
                 implicit val scheduler: Scheduler = system.scheduler
                 implicit val context: ExecutionContextExecutor = system.executionContext
@@ -42,7 +50,7 @@ class SignInService extends SignInController with Initializable {
                     case exception: IOException =>
                         exception.printStackTrace()
                 }
-                val root: Parent = loader.getRoot()
+                val root: Parent = loader.getRoot
                 val stage: Stage = new Stage()
                 val receivedController: ChatService = loader.getController
                 stage.setScene(new Scene(root))
