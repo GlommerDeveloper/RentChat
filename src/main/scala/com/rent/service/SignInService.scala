@@ -12,17 +12,20 @@ import javafx.scene.{Parent, Scene}
 import javafx.stage.Stage
 
 import java.io.IOException
-import java.net.URL
+import java.net.{ServerSocket, URL}
 import java.util.ResourceBundle
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationInt
+import scala.util.{Try, Using}
 
 class SignInService extends SignInController with Initializable {
 
-    private var userPort: Int = _
+    private val userPort: Int = freePorts
     private var userNickName: String = _
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
+
+        portField.setText(userPort.toString)
 
         signInButton.setOnMouseEntered(event => {
             signInButton.setStyle("-fx-background-color: #643a7e")
@@ -34,11 +37,12 @@ class SignInService extends SignInController with Initializable {
 
         signInButton.setOnAction(event => {
             if (nickNameField.getText.nonEmpty || portField.getText.nonEmpty) {
-                userPort = portField.getText.toInt
+                //userPort = portField.getText.toInt
+
                 userNickName = nickNameField.getText
                 signInButton.getScene.getWindow.hide()
 
-                val system = startup("clientView", userPort)        //RUN CLUSTER
+                val system = startup(userPort)                          //RUN CLUSTER
                 implicit val timeout: Timeout = Timeout(20.seconds)
                 implicit val scheduler: Scheduler = system.scheduler
                 implicit val context: ExecutionContextExecutor = system.executionContext
@@ -62,5 +66,19 @@ class SignInService extends SignInController with Initializable {
                 clientActor ! NewClient(userPort, userNickName)
             }
         })
+    }
+
+    def freePorts: Int = {
+        var freePort: Int = 0
+        try{
+            new ServerSocket(25251).close()
+            freePort = 25251
+            freePort
+        } catch {
+            case e: IOException => {
+                Using(new ServerSocket(0)) (_.getLocalPort).foreach(port => freePort = port)
+                freePort
+            }
+        }
     }
 }

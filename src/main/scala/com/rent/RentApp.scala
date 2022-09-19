@@ -28,13 +28,12 @@ object RentApplication {
         }
     }
 
-    def startup(role: String, port: Int): ActorSystem[RootCmd] = {
+    def startup(port: Int): ActorSystem[RootCmd] = {
 
         val config = ConfigFactory
             .parseString(
                 s"""
               akka.remote.artery.canonical.port=$port
-              akka.cluster.roles = [$role]
               """)
             .withFallback(ConfigFactory.load())
 
