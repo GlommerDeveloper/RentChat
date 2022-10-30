@@ -5,16 +5,21 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.rent.service.ChatService">
+<HBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.rent.service.ChatService">
    <children>
       <VBox prefHeight="400.0" prefWidth="250.0">
          <children>
-            <Label alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" style="-fx-background-color: #02315E;" text="Friends" textFill="#c6d3fa" VBox.vgrow="ALWAYS">
+            <Label fx:id="myNameLabel" alignment="TOP_CENTER" layoutX="10.0" layoutY="27.0" maxWidth="1.7976931348623157E308" style="-fx-background-color: #02315E; -fx-border-color: #22577E; -fx-border-width: 4px; -fx-border-radius: 7;" textFill="#c6d3fa">
                <font>
-                  <Font name="Impact" size="30.0" />
+                  <Font name="Georgia" size="28.0" />
+               </font>
+            </Label>
+            <Pane prefHeight="2.0" prefWidth="200.0" style="-fx-background-color: #02315E;" />
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="40.0" style="-fx-background-color: #02315E; -fx-border-color: #22577E; -fx-border-width: 4px; -fx-border-radius: 7;" text="My friends" textFill="#c6d3fa" VBox.vgrow="ALWAYS">
+               <font>
+                  <Font name="Corbel Light" size="22.0" />
                </font></Label>
-            <Pane prefHeight="6.0" prefWidth="150.0" style="-fx-background-color: #2F70AF;" />
-            <ListView fx:id="friendsListView" prefHeight="656.0" prefWidth="260.0" style="-fx-background-color: #02315E;" VBox.vgrow="ALWAYS" />
+            <ListView fx:id="friendsListView" prefHeight="572.0" prefWidth="231.0" style="-fx-padding: 0px;" VBox.vgrow="ALWAYS" />
          </children>
          <HBox.margin>
             <Insets />
@@ -25,7 +30,7 @@
             <ListView fx:id="chatListView" prefHeight="654.0" prefWidth="788.0" style="-fx-background-color: #00457E;" VBox.vgrow="ALWAYS" />
             <HBox style="-fx-background-color: #00457E;">
                <children>
-                  <TextField fx:id="messagesTextField" maxHeight="1.7976931348623157E308" style="-fx-background-color: #2F70AF;" HBox.hgrow="ALWAYS">
+                  <TextField fx:id="messagesTextField" style="-fx-background-color: #2F70AF;" HBox.hgrow="ALWAYS">
                      <font>
                         <Font size="22.0" />
                      </font></TextField>

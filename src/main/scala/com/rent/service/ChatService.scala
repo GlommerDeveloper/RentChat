@@ -4,9 +4,11 @@ import com.rent.actor.ClientView.{PostMessage, PostMessageToGeneral, clientInClu
 import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
+import javafx.event.EventHandler
 import javafx.fxml.Initializable
 import javafx.geometry.Pos
 import javafx.scene.control.{ListCell, ListView}
+import javafx.scene.input.{KeyCode, KeyEvent}
 import javafx.scene.text.{Font, TextAlignment}
 
 import java.net.URL
@@ -16,7 +18,7 @@ class ChatService extends ChatController with Initializable {
 
     private var myself: Customer = _
     private var currentFriend: Customer = _
-    private val generalRoom: Customer = new Customer(200002, "General", null)
+    private val generalRoom: Customer = new Customer(-1, "Group chat", null)
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
@@ -24,10 +26,10 @@ class ChatService extends ChatController with Initializable {
         messagesTextField.setVisible(false)
 
         friendsListView.setCellFactory((elem: ListView[Customer]) => new ListCell[Customer]() {
+            setStyle("-fx-control-inner-background: #02315E; -fx-text-fill: #c6d3fa; -fx-selection-bar-non-focused:  #2F70AF;")
+            setFont(Font.font("Corbel Light", 20))
             override def updateItem(item: Customer, empty: Boolean): Unit = {
                 super.updateItem(item, empty)
-                setStyle("-fx-control-inner-background: #02315E; -fx-text-fill: #c6d3fa;")
-                setFont(Font.font("Impact",20))
                 if (empty || item == null) {
                     setText(null)
                 } else {
@@ -51,6 +53,8 @@ class ChatService extends ChatController with Initializable {
                 }
             }
         })
+
+        friendsListView.setFocusTraversable(false)
 
         chatListView.setCellFactory((elem: ListView[Message]) => new ListCell[Message]() {
             override def updateItem(item: Message, empty: Boolean): Unit = {
@@ -79,27 +83,36 @@ class ChatService extends ChatController with Initializable {
         })
 
         sendButton.setOnAction(event => {
-            if (messagesTextField.getText.nonEmpty) {
-                println("--Button is pressed--")
-                val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
-                messagesTextField.clear()
-                myself.saveMessagesInChat(message, currentFriend)
-                chatListView.getItems.clear()
-                myself.getListMessagesWithFriends(currentFriend).foreach(msg => chatListView.getItems.add(msg))
-                if (currentFriend.getPort == 200002){
-                    println("---SEND MESSAGE TO ACTOR---")
-                    myself.getRef ! PostMessageToGeneral(message, myself, generalRoom)
-                } else {
-                    currentFriend.getRef ! PostMessage(message, myself)
-                }
-            }
+            sendMessage()
         })
+
+        messagesTextField.setOnKeyPressed((t: KeyEvent) => {
+            if(t.getCode.equals(KeyCode.ENTER)) sendMessage()
+        })
+    }
+
+    def sendMessage(): Unit = {
+        if (messagesTextField.getText.nonEmpty) {
+            println("--Button is pressed--")
+            val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
+            messagesTextField.clear()
+            myself.saveMessagesInChat(message, currentFriend)
+            chatListView.getItems.clear()
+            myself.getListMessagesWithFriends(currentFriend).foreach(msg => chatListView.getItems.add(msg))
+            if (currentFriend.getNickName == "Group chat"){
+                println("---SEND MESSAGE TO ACTOR---")
+                myself.getRef ! PostMessageToGeneral(message, myself, generalRoom)
+            } else {
+                currentFriend.getRef ! PostMessage(message, myself)
+            }
+        }
     }
 
     def setMySelf(receivedMySelf: Customer): Unit = {
         println("------SET MYSELF------")
         friendsListView.getItems.add(generalRoom)
-        friendsListView.getItems.add(receivedMySelf)
+        //friendsListView.getItems.add(receivedMySelf)
+        myNameLabel.setText(receivedMySelf.getNickName)
         myself = receivedMySelf
     }
 
@@ -119,6 +132,15 @@ class ChatService extends ChatController with Initializable {
             println("--I'M HERE--")
             chatListView.getItems.clear()
             myself.getListMessagesWithFriends(friend).foreach(msg => chatListView.getItems.add(msg))
+        }
+    }
+
+    def deleteUser(friend: Customer): Unit ={
+        println("------TRYING TO DELETE USER FROM LIST------")
+        var check: Boolean = false
+        friendsListView.getItems.forEach(friend => if(friend.equals(friend)) check = true)
+        if (check) {
+            friendsListView.getItems.remove(friend)
         }
     }
 }

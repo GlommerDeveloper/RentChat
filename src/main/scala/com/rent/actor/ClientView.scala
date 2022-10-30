@@ -3,6 +3,7 @@ package com.rent.actor
 import akka.actor.typed.receptionist.{Receptionist, ServiceKey}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
+import com.rent.RentApp.clientActor
 import com.rent.model.{Customer, Message}
 import com.rent.service.ChatService
 import javafx.application.Platform
@@ -30,6 +31,10 @@ object ClientView {
 
     case class PostMessageToGeneral(message: Message, fromFriend: Customer, generalRoom: Customer) extends Event
 
+    case class StopActor() extends Event
+
+    case class DeleteStoppedActor(friend: Customer) extends Event
+
 
     def apply(controller: ChatService): Behavior[Event] = Behaviors.setup { ctx =>
         init(ctx, controller)
@@ -39,6 +44,7 @@ object ClientView {
         Behaviors.receiveMessage {
             case NewClient(clientPort, clientNickName) =>
                 println("------IN NEW_CLIENT CASE------" + "\nport: " + clientPort + "\nnick: " + clientNickName)
+                clientActor = ctx.self
                 clientInCluster = new Customer(clientPort, clientNickName, ctx.self)
                 Platform.runLater(() => controller.setMySelf(clientInCluster))
 
@@ -76,6 +82,15 @@ object ClientView {
 
             case PostMessageToGeneral(message, fromFriend, generalRoom) =>
                 currentCountClients.foreach(actor => if (actor != ctx.self) actor ! PostMessage(message, generalRoom))
+                Behaviors.same
+
+            case StopActor() =>
+                println("---CASE STOPaCTOR---")
+                currentCountClients.foreach(actor => if (actor != ctx.self) actor ! DeleteStoppedActor(clientInCluster))
+                Behaviors.stopped
+
+            case DeleteStoppedActor(friend) =>
+                Platform.runLater(() => controller.deleteUser(friend))
                 Behaviors.same
         }
 }

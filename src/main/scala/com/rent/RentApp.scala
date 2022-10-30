@@ -4,9 +4,9 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
 import akka.cluster.typed.Cluster
 import com.rent.actor.ClientView
-import com.rent.actor.ClientView.{Event, JSer}
+import com.rent.actor.ClientView.{JSer, StopActor}
 import com.typesafe.config.ConfigFactory
-import javafx.application.Application
+import javafx.application.{Application, Platform}
 import javafx.fxml.FXMLLoader
 import javafx.scene.Scene
 import javafx.scene.image.Image
@@ -15,7 +15,7 @@ import javafx.stage.Stage
 import java.io.IOException
 
 
-object RentApplication {
+object RentApp {
 
     var clientActor: ActorRef[ClientView.Event] = _
 
@@ -43,6 +43,11 @@ object RentApplication {
     def main(args: Array[String]): Unit = {
         Application.launch(classOf[RentApp])
     }
+
+    def stop: Unit = {
+        println("--In STOP--")
+        clientActor ! StopActor()
+    }
 }
 
 class RentApp extends Application {
@@ -61,5 +66,13 @@ class RentApp extends Application {
             case e: IOException =>
                 e.printStackTrace()
         }
+    }
+
+    override def stop(): Unit = {
+        RentApp.stop
+        Platform.exit()
+        System.exit(0)
+
+        super.stop()
     }
 }
