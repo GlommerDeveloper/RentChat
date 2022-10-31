@@ -12,6 +12,7 @@ import javafx.scene.text.Font
 
 import java.net.URL
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.ResourceBundle
 
 class ChatService extends ChatController with Initializable {
@@ -63,15 +64,11 @@ class ChatService extends ChatController with Initializable {
                     setText(null)
                 } else {
                     if (item.getFrom == myself.getRef) {
-                        setText("(" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ") " + item.getTextBody)
+                        setText("(" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")) + ") " + item.getTextBody)
                         setAlignment(Pos.TOP_RIGHT)
                     } else {
                         setAlignment(Pos.TOP_LEFT)
-                        if(item.getTo == generalRoom.getRef){
-                            setText(item.getTextBody + " (" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ")")
-                        } else {
-                            setText(item.getTextBody + " (" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ")")
-                        }
+                        setText(item.getTextBody + " (" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm")) + ")")
                     }
                 }
             }
