@@ -10,6 +10,11 @@ version '1.0-SNAPSHOT'
 repositories {
     mavenCentral()
 }
+
+application {
+    mainClass = 'com.rent.RentApp'
+}
+
 def versions = [
         ScalaBinary: "2.13"
 ]
