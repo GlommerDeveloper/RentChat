@@ -1,33 +1,35 @@
 package com.rent.service
 
-import com.rent.actor.ClientView.{PostMessage, PostMessageToGeneral, clientInCluster}
+import com.rent.actor.ClientView.{PostMessage, PostMessageToGeneral}
 import com.rent.controller.ChatController
 import com.rent.model.{Customer, Message}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.fxml.Initializable
 import javafx.geometry.Pos
 import javafx.scene.control.{ListCell, ListView}
-import javafx.scene.text.{Font, TextAlignment}
+import javafx.scene.input.{KeyCode, KeyEvent}
+import javafx.scene.text.Font
 
 import java.net.URL
+import java.time.LocalDateTime
 import java.util.ResourceBundle
 
 class ChatService extends ChatController with Initializable {
 
     private var myself: Customer = _
     private var currentFriend: Customer = _
-    private val generalRoom: Customer = new Customer(200002, "General", null)
+    private val generalRoom: Customer = new Customer(-1, "Group chat", null)
 
     override def initialize(location: URL, resources: ResourceBundle): Unit = {
 
         sendButton.setVisible(false)
         messagesTextField.setVisible(false)
 
-        friendsListView.setCellFactory((elem: ListView[Customer]) => new ListCell[Customer]() {
+        friendsListView.setCellFactory((_: ListView[Customer]) => new ListCell[Customer]() {
+            setStyle("-fx-control-inner-background: #02315E; -fx-text-fill: #c6d3fa; -fx-selection-bar-non-focused:  #2F70AF;")
+            setFont(Font.font("Corbel Light", 20))
             override def updateItem(item: Customer, empty: Boolean): Unit = {
                 super.updateItem(item, empty)
-                setStyle("-fx-control-inner-background: #02315E; -fx-text-fill: #c6d3fa;")
-                setFont(Font.font("Impact",20))
                 if (empty || item == null) {
                     setText(null)
                 } else {
@@ -52,7 +54,7 @@ class ChatService extends ChatController with Initializable {
             }
         })
 
-        chatListView.setCellFactory((elem: ListView[Message]) => new ListCell[Message]() {
+        chatListView.setCellFactory((_: ListView[Message]) => new ListCell[Message]() {
             override def updateItem(item: Message, empty: Boolean): Unit = {
                 super.updateItem(item, empty)
                 setStyle("-fx-control-inner-background: #00457E; -fx-text-fill: #c6d3fa;")
@@ -60,46 +62,59 @@ class ChatService extends ChatController with Initializable {
                 if (empty || item == null) {
                     setText(null)
                 } else {
-                    setText(item.getTextBody)
                     if (item.getFrom == myself.getRef) {
+                        setText("(" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ") " + item.getTextBody)
                         setAlignment(Pos.TOP_RIGHT)
                     } else {
                         setAlignment(Pos.TOP_LEFT)
+                        if(item.getTo == generalRoom.getRef){
+                            setText(item.getTextBody + " (" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ")")
+                        } else {
+                            setText(item.getTextBody + " (" + LocalDateTime.now().getHour + ":" + LocalDateTime.now().getMinute + ")")
+                        }
                     }
                 }
             }
         })
 
-        sendButton.setOnMouseEntered(event => {
+        sendButton.setOnMouseEntered(_ => {
             sendButton.setStyle("-fx-background-color: #643a7e")
         })
 
-        sendButton.setOnMouseExited(event => {
+        sendButton.setOnMouseExited(_ => {
             sendButton.setStyle("-fx-background-color: #806491")
         })
 
-        sendButton.setOnAction(event => {
-            if (messagesTextField.getText.nonEmpty) {
-                println("--Button is pressed--")
-                val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
-                messagesTextField.clear()
-                myself.saveMessagesInChat(message, currentFriend)
-                chatListView.getItems.clear()
-                myself.getListMessagesWithFriends(currentFriend).foreach(msg => chatListView.getItems.add(msg))
-                if (currentFriend.getPort == 200002){
-                    println("---SEND MESSAGE TO ACTOR---")
-                    myself.getRef ! PostMessageToGeneral(message, myself, generalRoom)
-                } else {
-                    currentFriend.getRef ! PostMessage(message, myself)
-                }
-            }
+        sendButton.setOnAction(_ => {
+            sendMessage()
         })
+
+        messagesTextField.setOnKeyPressed((t: KeyEvent) => {
+            if(t.getCode.equals(KeyCode.ENTER)) sendMessage()
+        })
+    }
+
+    def sendMessage(): Unit = {
+        if (messagesTextField.getText.nonEmpty) {
+            println("--Button is pressed--")
+            val message: Message = new Message(myself.getRef, currentFriend.getRef, messagesTextField.getText)
+            messagesTextField.clear()
+            myself.saveMessagesInChat(message, currentFriend)
+            chatListView.getItems.clear()
+            myself.getListMessagesWithFriends(currentFriend).foreach(msg => chatListView.getItems.add(msg))
+            if (currentFriend.getNickName == "Group chat"){
+                println("---SEND MESSAGE TO ACTOR---")
+                myself.getRef ! PostMessageToGeneral(message, generalRoom)
+            } else {
+                currentFriend.getRef ! PostMessage(message, myself)
+            }
+        }
     }
 
     def setMySelf(receivedMySelf: Customer): Unit = {
         println("------SET MYSELF------")
         friendsListView.getItems.add(generalRoom)
-        friendsListView.getItems.add(receivedMySelf)
+        myNameLabel.setText(receivedMySelf.getNickName)
         myself = receivedMySelf
     }
 
@@ -119,6 +134,15 @@ class ChatService extends ChatController with Initializable {
             println("--I'M HERE--")
             chatListView.getItems.clear()
             myself.getListMessagesWithFriends(friend).foreach(msg => chatListView.getItems.add(msg))
+        }
+    }
+
+    def deleteUser(friend: Customer): Unit ={
+        println("------TRYING TO DELETE USER FROM LIST------")
+        var check: Boolean = false
+        friendsListView.getItems.forEach(friend => if(friend.equals(friend)) check = true)
+        if (check) {
+            friendsListView.getItems.remove(friend)
         }
     }
 }

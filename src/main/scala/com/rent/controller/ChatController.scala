@@ -1,7 +1,7 @@
 package com.rent.controller
 
 import javafx.fxml.FXML
-import javafx.scene.control.{Button, ListView, TextField}
+import javafx.scene.control.{Button, ListView, TextField, Label}
 import com.rent.model.{Customer, Message}
 import javafx.scene.control
 
@@ -16,6 +16,8 @@ class ChatController {
   protected var messagesTextField: TextField = _
   @FXML
   protected var sendButton: Button = _
+  @FXML
+  protected var myNameLabel: Label = _
 
   @FXML
   def initialize(): Unit = {
