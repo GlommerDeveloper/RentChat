@@ -44,7 +44,7 @@ object RentApp {
         Application.launch(classOf[RentApp])
     }
 
-    def stop: Unit = {
+    def stop(): Unit = {
         println("--In STOP--")
         clientActor ! StopActor()
     }
@@ -69,7 +69,7 @@ class RentApp extends Application {
     }
 
     override def stop(): Unit = {
-        RentApp.stop
+        RentApp.stop()
         Platform.exit()
         System.exit(0)
 

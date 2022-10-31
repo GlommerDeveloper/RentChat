@@ -28,15 +28,15 @@ class SignInService extends SignInController with Initializable {
 
         portField.setText(userPort.toString)
 
-        signInButton.setOnMouseEntered(event => {
+        signInButton.setOnMouseEntered(_ => {
             signInButton.setStyle("-fx-background-color: #643a7e")
         })
 
-        signInButton.setOnMouseExited(event => {
+        signInButton.setOnMouseExited(_ => {
             signInButton.setStyle("-fx-background-color: #806491")
         })
 
-        signInButton.setOnAction(event => {
+        signInButton.setOnAction(_ => {
             signIn()
         })
 
@@ -51,8 +51,6 @@ class SignInService extends SignInController with Initializable {
 
     def signIn(): Unit = {
         if (nickNameField.getText.nonEmpty || portField.getText.nonEmpty) {
-            //userPort = portField.getText.toInt
-
             userNickName = nickNameField.getText
             signInButton.getScene.getWindow.hide()
 
@@ -88,10 +86,9 @@ class SignInService extends SignInController with Initializable {
             freePort = 25251
             freePort
         } catch {
-            case e: IOException => {
+            case _: IOException =>
                 Using(new ServerSocket(0)) (_.getLocalPort).foreach(port => freePort = port)
                 freePort
-            }
         }
     }
 }
